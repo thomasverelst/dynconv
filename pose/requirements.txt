@@ -1,0 +1,14 @@
+EasyDict==1.7
+opencv-python
+matplotlib==3.0
+Cython
+numpy
+scipy
+pandas
+pyyaml
+json_tricks
+yacs>=0.1.5
+tqdm
+mat4py
+
+

@@ -1,0 +1,5 @@
+matplotlib==3.0
+numpy
+tqdm
+mat4py
+EasyDict==1.7
