@@ -1,6 +1,6 @@
 # DynConv
 
-This repository contains the implementation of DynConv ( [https://arxiv.org/abs/1912.03203](https://arxiv.org/abs/1912.03203) ) on classification. For simplicity, the code on classification does not include CUDA optimization for faster inference. To get that part, check the code on human pose estimation ( [https://github.com/thomasverelst/dynconv/pose/](https://github.com/thomasverelst/dynconv/pose/) ). This version just masks out spatial positions (e.g. similar to other works like Spatially Adaptive Computation Time).
+This repository contains the implementation of DynConv ( [https://arxiv.org/abs/1912.03203](https://arxiv.org/abs/1912.03203) ) on classification. For simplicity, the code on classification does not include CUDA optimization for faster inference. To get that part, check the code on human pose estimation ( [https://github.com/thomasverelst/dynconv/tree/master/pose](https://github.com/thomasverelst/dynconv/tree/master/pose) ). This version just masks out spatial positions (e.g. similar to other works like Spatially Adaptive Computation Time).
 
 
 
