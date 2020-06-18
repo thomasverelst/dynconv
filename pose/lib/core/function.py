@@ -327,7 +327,7 @@ def validate(config, val_loader, val_dataset, model, criterion, output_dir,
 
     avg_flops, total_flops, batch_count = model.compute_average_flops_cost()
     logger.info(f'# PARAMS: {get_model_parameters_number(model, as_string=False)/1e6} M')
-    logger.info(f'# FLOPS (multiply-accumulates, MACs): {(total_flops/idx)/1e9} GMacs on {idx} images')
+    logger.info(f'# average FLOPS (multiply-accumulates, MACs) per image: {(total_flops/idx)/1e9} GMacs on {idx} images')
 
     # some conditional execution statistics
     if len(flops_per_layer) > 0:
@@ -342,17 +342,17 @@ def validate(config, val_loader, val_dataset, model, criterion, output_dir,
         s = ''
         for perc in perc_per_layer_avg:
             s += f'{round(float(perc), 2)}, '
-        logger.info(f'# FLOPS (multiply-accumulates MACs) used percentage per layer (average): {s}')
+        logger.info(f'# average FLOPS (multiply-accumulates MACs) used percentage per layer (average): {s}')
         
         s = ''
         for std in perc_per_layer_std:
             s += f'{round(float(std), 2)}, '
-        logger.info(f'# FLOPS (multiply-accumulates MACs) used percentage per layer (standard deviation): {s}')
+        logger.info(f'# average FLOPS (multiply-accumulates MACs) used percentage per layer (standard deviation): {s}')
 
 
         exec_cond_flops = int(torch.sum(flops_per_layer))/idx
         total_cond_flops = int(torch.sum(total_per_layer))/idx
-        logger.info(f'# Conditional FLOPS (multiply-accumulates MACs) over all layers (average per image): {exec_cond_flops/1e9} GMac out of {total_cond_flops/1e9} GMac ({round(100*exec_cond_flops/total_cond_flops,1)}%)')
+        logger.info(f'# Conditional average FLOPS (multiply-accumulates MACs) over all layers (average per image): {exec_cond_flops/1e9} GMac out of {total_cond_flops/1e9} GMac ({round(100*exec_cond_flops/total_cond_flops,1)}%)')
 
     return perf_indicator
 

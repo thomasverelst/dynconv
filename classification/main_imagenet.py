@@ -229,7 +229,7 @@ def validate(args, val_loader, model, criterion, epoch):
                 viz.showKey()
 
     print(f'* Epoch {epoch} - Prec@1 {top1.avg:.3f}')
-    print(f'* FLOPS (multiply-accumulates, MACs) per image:  {model.compute_average_flops_cost()[0]/1e6:.6f} MMac')
+    print(f'* average FLOPS (multiply-accumulates, MACs) per image:  {model.compute_average_flops_cost()[0]/1e6:.6f} MMac')
     model.stop_flops_count()
     return top1.avg
 

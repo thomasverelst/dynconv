@@ -22,8 +22,14 @@ class BasicBlock(nn.Module):
     """Standard residual block """
     expansion = 1
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, sparse=False):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
+                 base_width=64, dilation=1, norm_layer=None, sparse=False):
         super(BasicBlock, self).__init__()
+        assert groups == 1
+        assert dilation == 1
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = nn.BatchNorm2d(planes)
         self.relu = nn.ReLU(inplace=True)

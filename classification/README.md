@@ -17,7 +17,19 @@ The other requirements (matplotlib, tqdm, numpy...) can be installed using pip:
 
     pip install -r requirements.txt
 
-### Evaluate a pretrained sparse DynConv network
+### Trained models
+Our trained models can be found here: [Microsoft OneDrive link](https://1drv.ms/u/s!ApImBF1PK3gnjoocGrSm908HR9-xuw?e=BWkRZF)
+
+Unzip and place them into the root of the classification folder, so the folder structure looks as follows:
+> ./main_cifar.py  
+> ./main_imagenet.py  
+> ./exp/cifar/resnet32/...  
+> ./exp/cifar/resnet26/...  
+> ./exp/imagenet/...  
+> ...  
+
+
+### Evaluate a trained sparse DynConv network
 
     python main_cifar.py --model resnet32 -r exp/cifar/resnet32/sparse07/checkpoint_best.pth --budget 0.7 -e
 
