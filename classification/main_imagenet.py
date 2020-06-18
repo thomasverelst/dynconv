@@ -24,7 +24,7 @@ device='cuda'
 
 def main():
     parser = argparse.ArgumentParser(description='PyTorch ImageNet Training with sparse masks')
-    parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
+    parser.add_argument('--lr', default=0.025, type=float, help='learning rate')
     parser.add_argument('--lr_decay', default=[30,60,90], nargs='+', type=int, help='learning rate decay epochs')
     parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
     parser.add_argument('--weight_decay', default=1e-4, type=float, help='weight decay')
