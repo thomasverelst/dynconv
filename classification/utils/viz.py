@@ -14,10 +14,10 @@ def plot_image(input):
     im = unnormalize(input[0]).cpu().numpy().transpose(1,2,0)
     plt.imshow(im)
 
-
 def plot_ponder_cost(masks):
     ''' plots ponder cost
-    argument masks is a list with masks as returned by the network '''
+    argument masks is a list with masks as returned by the network 
+    if batchsize > 1, it will use the first image of the batch'''
     assert isinstance(masks, list)
     plt.figure('Ponder Cost')
     ponder_cost = dynconv.ponder_cost_map(masks)
@@ -26,7 +26,8 @@ def plot_ponder_cost(masks):
 
 def plot_masks(masks):
     ''' plots individual masks as subplots 
-    argument masks is a list with masks as returned by the network '''
+    argument masks is a list with masks as returned by the network 
+    if batchsize > 1, it will use the first image of the batch'''
     nb_mask = len(masks)
     WIDTH = 4
     HEIGHT = math.ceil(nb_mask / 4)
@@ -36,8 +37,7 @@ def plot_masks(masks):
         x = i % WIDTH
         y = i // WIDTH
 
-        m = mask['std'].hard[0].cpu().numpy().squeeze(0)
-
+        m = mask[0].cpu().numpy().squeeze(0)
         assert m.ndim == 2
         axarr[y,x].imshow(m, vmin=0, vmax=1)
         axarr[y,x].axis('off')

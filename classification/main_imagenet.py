@@ -74,7 +74,10 @@ def main():
 
     ## MODEL
     net_module = models.__dict__[args.model]
-    model = net_module(sparse=args.budget >= 0, pretrained=args.pretrained).to(device=device)
+    model = net_module(sparse=args.budget >= 0, pretrained=args.pretrained)
+    model = nn.DataParallel(model).to(device=device)
+
+
 
     ## CRITERION
     class Loss(nn.Module):
@@ -106,15 +109,18 @@ def main():
             os.makedirs(os.path.join(args.save_dir))
 
     if args.resume:
-        if os.path.isfile(args.resume):
-            print(f"=> loading checkpoint '{args.resume}'")
-            checkpoint = torch.load(args.resume)
+        resume_path = args.resume
+        if not os.path.isfile(resume_path):
+            resume_path = os.path.join(resume_path, 'checkpoint.pth')
+        if os.path.isfile(resume_path):
+            print(f"=> loading checkpoint '{resume_path}'")
+            checkpoint = torch.load(resume_path)
             # print('check', checkpoint)
             start_epoch = checkpoint['epoch']-1
             best_prec1 = checkpoint['best_prec1']
             model.load_state_dict(checkpoint['state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer'])
-            print(f"=> loaded checkpoint '{args.resume}'' (epoch {checkpoint['epoch']}, best prec1 {checkpoint['best_prec1']})")
+            print(f"=> loaded checkpoint '{resume_path}'' (epoch {checkpoint['epoch']}, best prec1 {checkpoint['best_prec1']})")
         else:
             msg = "=> no checkpoint found at '{}'".format(args.resume)
             if args.evaluate:
@@ -185,8 +191,9 @@ def train(args, train_loader, model, criterion, optimizer, epoch):
         target = target.to(device=device, non_blocking=True)
 
         # compute output
-        meta = {'masks': [], 'device': device, 'gumbel_temp': gumbel_temp, 'gumbel_noise': gumbel_noise, 'epoch': epoch}
+        meta = {'gumbel_temp': gumbel_temp, 'gumbel_noise': gumbel_noise}
         output, meta = model(input, meta)
+        meta['epoch'] = epoch
         loss = criterion(output, target, meta)
 
         # compute gradient and do SGD step
@@ -214,7 +221,7 @@ def validate(args, val_loader, model, criterion, epoch):
             target = target.to(device=device, non_blocking=True)
 
             # compute output
-            meta = {'masks': [], 'device': device, 'gumbel_temp': 1.0, 'gumbel_noise': False, 'epoch': epoch}
+            meta = {'gumbel_temp': 1.0, 'gumbel_noise': False}
             output, meta = model(input, meta)
             output = output.float()
 

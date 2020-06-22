@@ -147,7 +147,7 @@ def upsample_flops_counter_hook(module, input, output):
 def relu_flops_counter_hook(module, input, output):
     active_elements_count = output.numel()
     if module.__mask__ is not None:
-        active_elements_count *= float(module.__mask__.active_positions / module.__mask__.total_positions)
+        active_elements_count *= float(module.__mask__.sum() / module.__mask__.numel())
     module.__flops__ += active_elements_count
 
 
@@ -171,7 +171,7 @@ def bn_flops_counter_hook(module, input, output):
     if module.affine:
         batch_flops *= 2
     if module.__mask__ is not None:
-        batch_flops *= float(module.__mask__.active_positions / module.__mask__.total_positions)
+        batch_flops *= float(module.__mask__.sum() / module.__mask__.numel())
     module.__flops__ += batch_flops
 
 def conv_flops_counter_hook(conv_module, input, output):
@@ -192,7 +192,7 @@ def conv_flops_counter_hook(conv_module, input, output):
     if conv_module.__mask__ is None:
         active_elements_count = batch_size * output_height * output_width
     else:
-        active_elements_count = float(conv_module.__mask__.active_positions)
+        active_elements_count = float(conv_module.__mask__.sum())
 
 
     overall_conv_flops = conv_per_position_flops * active_elements_count

@@ -24,17 +24,19 @@ class SparsityCriterion(nn.Module):
         upper_bound = (1 - progress*(1-self.sparsity_target))
         lower_bound = progress*self.sparsity_target
 
-        loss_block = torch.tensor(.0).to(device=meta['device'])
-        cost, total = torch.tensor(.0).to(device=meta['device']), torch.tensor(.0).to(device=meta['device'])
+        dicts = [meta[k] for k in ['masks', 'masks_dilate', 'flops_per_position','flops_per_position_dilate']]
+        for i, (mask, mask_dilate, flops, flops_dilate) in enumerate(zip(*dicts)):
+            if i == 0:
+                loss_block = torch.tensor(.0).to(device=mask.device)
+                cost, total = torch.tensor(.0).to(device=mask.device), torch.tensor(.0).to(device=mask.device)
+            batchsize = mask.shape[0]
+            mask_active_positions = mask.view(batchsize, -1).sum(1)
+            mask_dilate_active_positions = mask_dilate.view(batchsize, -1).sum(1)
 
-        for i, mask in enumerate(meta['masks']):
-            m_dil = mask['dilate']
-            m = mask['std']
-
-            c = m_dil.active_positions * m_dil.flops_per_position + \
-                m.active_positions * m.flops_per_position
-            t = m_dil.total_positions * m_dil.flops_per_position + \
-                m.total_positions * m.flops_per_position
+            c = torch.sum(mask_active_positions * flops) + \
+                torch.sum(mask_dilate_active_positions * flops_dilate)
+            t = torch.sum(mask[0].numel() * flops) + \
+                torch.sum(mask_dilate[0].numel() * flops_dilate)
 
             layer_perc = c / t
             logger.add('layer_perc_'+str(i), layer_perc.item())

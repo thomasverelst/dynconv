@@ -20,6 +20,8 @@ import models
 
 cudnn.benchmark = True
 
+
+
 device = 'cuda'
 
 def main():
@@ -69,7 +71,8 @@ def main():
 
     ## MODEL
     net_module = models.__dict__[args.model]
-    model = net_module(sparse=args.budget >= 0, pretrained=args.pretrained).to(device=device)
+    model = net_module(sparse=args.budget >= 0, pretrained=args.pretrained)
+    model = nn.DataParallel(model, device_ids=(0,)).to(device=device) # CIFAR always single GPU
 
     ## CRITERION
     class Loss(nn.Module):
@@ -179,8 +182,9 @@ def train(args, train_loader, model, criterion, optimizer, epoch):
         target = target.to(device=device, non_blocking=True)
 
         # compute output
-        meta = {'masks': [], 'device': device, 'gumbel_temp': gumbel_temp, 'gumbel_noise': gumbel_noise, 'epoch': epoch}
+        meta = {'gumbel_temp': gumbel_temp, 'gumbel_noise': gumbel_noise}
         output, meta = model(input, meta)
+        meta['epoch'] = epoch
         loss = criterion(output, target, meta)
 
         # compute gradient and do SGD step
@@ -208,7 +212,7 @@ def validate(args, val_loader, model, criterion, epoch):
             target = target.to(device=device, non_blocking=True)
 
             # compute output
-            meta = {'masks': [], 'device': device, 'gumbel_temp': 1.0, 'gumbel_noise': False, 'epoch': epoch}
+            meta = {'gumbel_temp': 1.0, 'gumbel_noise': False}
             output, meta = model(input, meta)
             output = output.float()
 

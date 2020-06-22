@@ -60,14 +60,14 @@ class BasicBlock(nn.Module):
             out += identity
         else:
             assert meta is not None
-            m = self.masker(x, meta)
-            mask_dilate, mask = m['dilate'], m['std']
+            meta = self.masker(x, meta)
 
-            x = dynconv.conv3x3(self.conv1, x, None, mask_dilate)
-            x = dynconv.bn_relu(self.bn1, self.relu, x, mask_dilate)
-            x = dynconv.conv3x3(self.conv2, x, mask_dilate, mask)
-            x = dynconv.bn_relu(self.bn2, None, x, mask)
-            out = identity + dynconv.apply_mask(x, mask)
+            x = dynconv.conv3x3(self.conv1, x, None, meta['masks_dilate'], meta['flops_per_position_dilate'])
+            x = dynconv.bn_relu(self.bn1, self.relu, x, meta['masks_dilate'], meta['flops_per_position_dilate'])
+            x = dynconv.conv3x3(self.conv2, x, meta['masks_dilate'], meta['masks'], meta['flops_per_position'])
+            x = dynconv.bn_relu(self.bn2, None, x, meta['masks'], meta['flops_per_position'])
+            
+            out = identity + dynconv.apply_mask(x, meta['masks'][-1])
 
         out = self.relu(out)
         return out, meta
@@ -121,16 +121,15 @@ class Bottleneck(nn.Module):
             out += identity
         else:
             assert meta is not None
-            m = self.masker(x, meta)
-            mask_dilate, mask = m['dilate'], m['std']
+            meta = self.masker(x, meta)
 
-            x = dynconv.conv1x1(self.conv1, x, mask_dilate)
-            x = dynconv.bn_relu(self.bn1, self.relu, x, mask_dilate)
-            x = dynconv.conv3x3(self.conv2, x, mask_dilate, mask)
-            x = dynconv.bn_relu(self.bn2, self.relu, x, mask)
-            x = dynconv.conv1x1(self.conv3, x, mask)
-            x = dynconv.bn_relu(self.bn3, None, x, mask)
-            out = identity + dynconv.apply_mask(x, mask)
+            x = dynconv.conv1x1(self.conv1, x,  meta['masks_dilate'], meta['flops_per_position_dilate'])
+            x = dynconv.bn_relu(self.bn1, self.relu, x, meta['masks_dilate'], meta['flops_per_position_dilate'])
+            x = dynconv.conv3x3(self.conv2, x, meta['masks_dilate'], meta['masks'], meta['flops_per_position'])
+            x = dynconv.bn_relu(self.bn2, self.relu, x, meta['masks'], meta['flops_per_position'])
+            x = dynconv.conv1x1(self.conv3, x, meta['masks'], meta['flops_per_position'])
+            x = dynconv.bn_relu(self.bn3, None, x, meta['masks'], meta['flops_per_position'])
+            out = identity + dynconv.apply_mask(x, meta['masks'][-1])
 
         out = self.relu(out)
         return out, meta

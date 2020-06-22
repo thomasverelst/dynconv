@@ -1,5 +1,8 @@
 # DynConv
 
+**This is the multi-gpu branch, code not properly tested yet**
+**Known bug: FLOPS counting during evaluation only works on single GPU (else returns 0)**
+
 This repository contains the implementation of DynConv ( [https://arxiv.org/abs/1912.03203](https://arxiv.org/abs/1912.03203) ) on classification. For simplicity, the code on classification does not include CUDA optimization for faster inference. To get that part, check the code on human pose estimation ( [https://github.com/thomasverelst/dynconv/tree/master/pose](https://github.com/thomasverelst/dynconv/tree/master/pose) ). This version just masks out spatial positions (e.g. similar to other works like Spatially Adaptive Computation Time).
 
 
@@ -18,7 +21,7 @@ The other requirements (matplotlib, tqdm, numpy...) can be installed using pip:
     pip install -r requirements.txt
 
 ### Trained models
-Our trained models can be found here: [Microsoft OneDrive link](https://1drv.ms/u/s!ApImBF1PK3gnjoocGrSm908HR9-xuw?e=BWkRZF)
+Our trained models can be found here: [Microsoft OneDrive link](https://1drv.ms/u/s!ApImBF1PK3gnjooderXKjqDjYHAeaA?e=ad7O1B)
 
 Unzip and place them into the root of the classification folder, so the folder structure looks as follows:
 > ./main_cifar.py  
@@ -96,3 +99,10 @@ Likewise:
 ### Evaluate a pretrained baseline
 
     python main_imagenet.py -r exp/imagenet/resnet101/base/checkpoint_best.pth -e
+
+### Train a DynConv model from scratch
+**Note: I still have to verify if this obtains the original resutls after the refactoring **
+
+Starts from a pretrained ImageNet checkpoint for faster convergence
+
+    python main_imagenet.py -s exp/experiment_name/ -r exp/experiment_name/ --pretrained --budget 0.5 --model resnet101

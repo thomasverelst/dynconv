@@ -3,34 +3,41 @@ import torch.nn as nn
 import torch.nn.functional as F
 from utils import logger
 
+# class Mask():
+#     '''
+#     Class that holds the mask properties
 
-class Mask():
-    '''
-    Class that holds the mask properties
+#     hard: the hard/binary mask (1 or 0), 4-dim tensor
+#     soft (optional): the float mask, same shape as hard
+#     active_positions: the amount of positions where hard == 1
+#     total_positions: the total amount of positions 
+#                         (typically batch_size * output_width * output_height)
+#     '''
+#     def __init__(self, hard, soft=None):
+#         assert hard.dim() == 4
+#         assert hard.shape[1] == 1
+#         assert soft is None or soft.shape == hard.shape
 
-    hard: the hard/binary mask (1 or 0), 4-dim tensor
-    soft (optional): the float mask, same shape as hard
-    active_positions: the amount of positions where hard == 1
-    total_positions: the total amount of positions 
-                        (typically batch_size * output_width * output_height)
-    '''
-    def __init__(self, hard, soft=None):
-        assert hard.dim() == 4
-        assert hard.shape[1] == 1
-        assert soft is None or soft.shape == hard.shape
-
-        self.hard = hard
-        self.active_positions = torch.sum(hard) # this must be kept backpropagatable!
-        self.total_positions = hard.numel()
-        self.soft = soft
-        
-        self.flops_per_position = 0
+#         self.hard = hard
+#         self.soft = soft
+#         self.flops_per_position = 0        
     
-    def size(self):
-        return self.hard.shape
+#     def size(self):
+#         return self.hard.shape
+    
+#     def add_flops_per_position(self, n):
+#         self.flops_per_position += n
 
-    def __repr__(self):
-        return f'Mask with {self.active_positions}/{self.total_positions} positions, and {self.flops_per_position} accumulated FLOPS per position'
+#     def get_active_positions(self):
+#         return self.hard.view(self.hard.shape[0], -1).sum(1)
+    
+#     def get_total_positions(self):
+#         return torch.prod(self.hard.shape[1:])
+
+
+#     def __repr__(self):
+#         return f'Mask with {self.get_active_positions()}/{self.get_total_positions()} positions, and {self.flops_per_position} accumulated FLOPS per position'
+
 
 class MaskUnit(nn.Module):
     ''' 
@@ -44,16 +51,16 @@ class MaskUnit(nn.Module):
         self.expandmask = ExpandMask(stride=dilate_stride)
 
     def forward(self, x, meta):
+        batchsize = x.shape[0]
         soft = self.maskconv(x)
         hard = self.gumbel(soft, meta['gumbel_temp'], meta['gumbel_noise'])
-        mask = Mask(hard, soft)
-
-        hard_dilate = self.expandmask(mask.hard)
-        mask_dilate = Mask(hard_dilate)
+        hard_dilate = self.expandmask(hard)
         
-        m = {'std': mask, 'dilate': mask_dilate}
-        meta['masks'].append(m)
-        return m
+        meta['masks'].append(hard)
+        meta['masks_dilate'].append(hard_dilate)
+        meta['flops_per_position'].append(torch.zeros(batchsize, device=x.device))
+        meta['flops_per_position_dilate'].append(torch.zeros(batchsize, device=x.device))
+        return meta
 
 
 ## Gumbel

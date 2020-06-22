@@ -11,56 +11,6 @@ import torch.nn as nn
 from torch.autograd import Variable
 from models.resnet_util import *
 
-class BasicBlock(nn.Module):
-    """Standard residual block """
-    expansion = 1
-
-    def __init__(self, inplanes, planes, stride=1, downsample=None, sparse=False):
-        super(BasicBlock, self).__init__()
-        self.conv1 = conv3x3(inplanes, planes, stride)
-        self.bn1 = nn.BatchNorm2d(planes)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv2 = conv3x3(planes, planes)
-        self.bn2 = nn.BatchNorm2d(planes)
-        self.downsample = downsample
-        self.stride = stride
-        self.sparse = sparse
-
-        if sparse:
-            # in the resnet basic block, the first convolution is already strided, so mask_stride = 1
-            self.masker = dynconv.MaskUnit(channels=inplanes, stride=stride, dilate_stride=1)
-
-        self.fast = False
-
-    def forward(self, input):
-        x, meta = input
-        identity = x
-        if self.downsample is not None:
-            identity = self.downsample(x)
-
-        if not self.sparse:
-            out = self.conv1(x)
-            out = self.bn1(out)
-            out = self.relu(out)
-            out = self.conv2(out)
-            out = self.bn2(out)
-            out += identity
-        else:
-            assert meta is not None
-            m = self.masker(x, meta)
-            mask_dilate, mask = m['dilate'], m['std']
-
-            x = dynconv.conv3x3(self.conv1, x, None, mask_dilate)
-            x = dynconv.bn_relu(self.bn1, self.relu, x, mask_dilate)
-            x = dynconv.conv3x3(self.conv2, x, mask_dilate, mask)
-            x = dynconv.bn_relu(self.bn2, None, x, mask)
-            out = identity + dynconv.apply_mask(x, mask)
-
-        out = self.relu(out)
-        return out, meta
-
-
-
 ########################################
 # Original ResNet                      #
 ########################################
@@ -112,6 +62,8 @@ class ResNet_32x32(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x, meta=None):
+        dynconv.add_meta(meta)
+
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -123,7 +75,7 @@ class ResNet_32x32(nn.Module):
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
-        return x, meta
+        return x, dynconv.get_output_meta(meta)
         
 def resnet8(sparse=False, **kwargs):
     return ResNet_32x32([1,1,1], sparse=sparse, **kwargs)

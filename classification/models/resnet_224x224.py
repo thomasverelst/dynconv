@@ -105,6 +105,8 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x, meta=None):
+        dynconv.add_meta(meta)
+
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -118,8 +120,8 @@ class ResNet(nn.Module):
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.fc(x)
-
-        return x, meta
+        
+        return x, dynconv.get_output_meta(meta)
 
 def _resnet(arch, block, layers, pretrained, progress, **kwargs):
     model = ResNet(block, layers, **kwargs)
