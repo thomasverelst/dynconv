@@ -210,7 +210,7 @@ def validate(args, val_loader, model, criterion, epoch):
     top1 = utils.AverageMeter()
 
     # switch to evaluate mode
-    model = flopscounter.add_flops_counting_methods(model)
+    model = flopscounter.add_flops_counting_methods(model.module)
     model.eval().start_flops_count()
     model.reset_flops_count()
 

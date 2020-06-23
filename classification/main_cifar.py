@@ -72,7 +72,7 @@ def main():
     ## MODEL
     net_module = models.__dict__[args.model]
     model = net_module(sparse=args.budget >= 0, pretrained=args.pretrained)
-    model = nn.DataParallel(model, device_ids=(0,)).to(device=device) # CIFAR always single GPU
+    model = nn.DataParallel(model).to(device=device) # CIFAR always single GPU
 
     ## CRITERION
     class Loss(nn.Module):
@@ -201,7 +201,7 @@ def validate(args, val_loader, model, criterion, epoch):
     top1 = utils.AverageMeter()
 
     # switch to evaluate mode
-    model = flopscounter.add_flops_counting_methods(model)
+    model = flopscounter.add_flops_counting_methods(model.module)
     model.eval().start_flops_count()
     model.reset_flops_count()
 
