@@ -1,4 +1,6 @@
 # Dynamic Convolutions - DynConv
+**This is the experimental multi-gpu branch (classification only), code not properly tested yet**
+
 Pytorch code for DynConv. DynConv applies convolutions on important regions of the image only, and thus reduces the computational cost while speeding up inference up to 2 times. 
 
 [https://arxiv.org/abs/1912.03203](https://arxiv.org/abs/1912.03203)
