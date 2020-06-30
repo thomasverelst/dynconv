@@ -33,7 +33,7 @@ Only tested on a single GPU! If your machine has multiple, add `CUDA_VISIBLE_DEV
 ## Testing a pretrained model (accuracy)
 Test a 4-stack model with computational budget 12.5%:
 
-    python tools/speedtest.py --cfg experiments/4stack/s0125.yaml DATASET.ROOT /path/to/mpii/root
+    python tools/test.py --cfg experiments/4stack/s0125.yaml DATASET.ROOT /path/to/mpii/root
 This should give as output
 
 > | Arch | Head | Shoulder | Elbow | Wrist | Hip | Knee | Ankle | Mean |Mean@0.1 |   
