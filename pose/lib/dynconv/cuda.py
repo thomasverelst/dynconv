@@ -4,13 +4,14 @@ from string import Template
 
 import cupy
 import torch
-
+import math
 # HELPER FUNCTIONS
 
 Stream = namedtuple('Stream', ['ptr'])
 
-ROUNDING = 16
+ROUNDING = 8
 CUDA_NUM_THREADS = 256
+CHANNELS_PER_THREAD = 2
 
 def Dtype(t):
     if isinstance(t, torch.cuda.FloatTensor):
@@ -108,11 +109,11 @@ def masked_conv_dw(xsparse, w, active_positions_list, active_positions_list_inve
     n2 = (nblocks//batch_stride + 1)*batch_stride if batch_stride > 0 else nblocks
     output =  torch.empty((n2, channels, 1, 1), device='cuda')
     output[nblocks:] = 0
-    
-    threadsx = min(min(CUDA_NUM_THREADS,32),channels)
-    threadsy = CUDA_NUM_THREADS//threadsx
+
+    threadsx =  min(math.ceil(channels/CHANNELS_PER_THREAD), CUDA_NUM_THREADS) 
+    threadsy = max(CUDA_NUM_THREADS//threadsx, 1)
     block = (threadsx, threadsy,1)
-    grid = (1,min(GET_BLOCKS(nblocks, threadsy), 256*256-1),1)
+    grid = (1,GET_BLOCKS(len(active_positions_list), threadsy),1)
 
     with torch.cuda.device_of(xsparse):
         f = load_kernel('masked_conv', _masked_conv_kernel, 
@@ -166,10 +167,11 @@ def batchnorm(x, weight, bias, running_mean, running_var, relu=False, relu6=Fals
     scale = weight/torch.sqrt(running_var+1e-5)
     bias = bias - scale*running_mean
 
-    threadsx = min(min(CUDA_NUM_THREADS,64),channels)
-    threadsy = CUDA_NUM_THREADS//threadsx
+    threadsx =  min(channels, CUDA_NUM_THREADS) 
+    threadsy = max(CUDA_NUM_THREADS//threadsx, 1)
     block = (threadsx, threadsy,1)
-    grid = (GET_BLOCKS(channels, threadsx),GET_BLOCKS(batchsize, threadsy),1)
+    grid = (1,GET_BLOCKS(batchsize, threadsy),1)
+
 
     assert width == 1, width
     assert height == 1, height
@@ -202,8 +204,8 @@ for (int i = blockIdx.y * blockDim.y + threadIdx.y; i < n; i += blockDim.y * gri
     const int b = k / (WIDTH * HEIGHT);
     const int pos = k % (WIDTH*HEIGHT);
     const int offset = b * CHANNELS * WIDTH * HEIGHT + pos;  
-    #pragma unroll
-    for(int c = threadIdx.x; c < CHANNELS; c += blockDim.x){
+    for (int c = blockIdx.x * blockDim.x + threadIdx.x; \
+        c < CHANNELS; c += blockDim.x * gridDim.x){
         data_out[i*CHANNELS+c] = data_in[offset+c*WIDTH*HEIGHT];
     }
 }
@@ -222,11 +224,10 @@ def gather(data_in, m, divisible=ROUNDING):
         data_out = torch.empty((n_out, channels, 1, 1), device='cuda')
         data_out[npixels:] = 0
 
-        threadsx = min(min(CUDA_NUM_THREADS,8*4),channels)
-        threadsy = CUDA_NUM_THREADS//threadsx
+        threadsx =  min(math.ceil(channels/CHANNELS_PER_THREAD), CUDA_NUM_THREADS) 
+        threadsy = max(CUDA_NUM_THREADS//threadsx, 1)
         block = (threadsx, threadsy,1)
         grid = (1,GET_BLOCKS(npixels, threadsy),1)
-
 
         f = load_kernel('gather_kernel', _gather_kernel, 
             batchsize=batchsize, channels=channels,
@@ -252,8 +253,8 @@ for (int i = blockIdx.y * blockDim.y + threadIdx.y; i < n; i += blockDim.y * gri
     const int b = k / (WIDTH * HEIGHT);
     const int pos = k % (WIDTH*HEIGHT);
     const int offset = b * CHANNELS * WIDTH * HEIGHT + pos;  
-    #pragma unroll
-    for(int c = threadIdx.x; c < CHANNELS; c += blockDim.x){
+    for (int c = blockIdx.x * blockDim.x + threadIdx.x; \
+        c < CHANNELS; c += blockDim.x * gridDim.x){
         if(${sum_result} > 0){
             atomicAdd(data_out+offset+c*WIDTH*HEIGHT, data_in[i*CHANNELS+c]);          
         } else {
@@ -276,11 +277,11 @@ def scatter(data_in, data_out, m, sum_out=False, output_channel_offset=0):
     assert data_in.shape[2] == 1
     assert data_in.shape[3] == 1
 
-    threadsx = min(min(CUDA_NUM_THREADS,8*4),channels)
-    threadsy = CUDA_NUM_THREADS//threadsx
+    threadsx =  min(math.ceil(channels/CHANNELS_PER_THREAD), CUDA_NUM_THREADS) 
+    threadsy = max(CUDA_NUM_THREADS//threadsx, 1)
     block = (threadsx, threadsy,1)
     grid = (1,GET_BLOCKS(len(active_positions_list), threadsy),1)
-    
+
     with torch.cuda.device_of(data_in):
         f = load_kernel('scatter_kernel', _scatter_kernel, 
             batchsize=batchsize, channels=channels,
