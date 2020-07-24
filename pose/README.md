@@ -3,6 +3,8 @@
 This repository contains the implementation of DynConv ( [https://arxiv.org/abs/1912.03203](https://arxiv.org/abs/1912.03203) ) on human pose estimation.
 The code is based on the code of Fast Pose Estimation ( [https://github.com/ilovepose/fast-human-pose-estimation.pytorch](https://github.com/ilovepose/fast-human-pose-estimation.pytorch) ). Note that not all features of the original repository are still working (e.g. Tensorboard logging, evaluation with flip augmentation).
 
+Just looking for the CUDA code? https://github.com/thomasverelst/dynconv/blob/master/pose/lib/dynconv/cuda.py
+
 ## Installation
 ### Requirements
 The main requirements of this work are:
