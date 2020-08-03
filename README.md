@@ -13,7 +13,6 @@ Note that our work consists of two parts:
 
 The first point is demonstrated on both classification and human pose estimation, the second point only on human pose estimation.
 
-
 ## Classification
 * [https://github.com/thomasverelst/dynconv/classification/](https://github.com/thomasverelst/dynconv/tree/master/classification)
 * ResNet on CIFAR-10 and ImageNet (only masks, no efficient CUDA implementation for simplicity)
@@ -25,7 +24,7 @@ The first point is demonstrated on both classification and human pose estimation
 ## Coming later (~August-September)
 * Classification with efficient sparse MobileNetV2
 
-[![](http://img.youtube.com/vi/F8y_f_nzsD0/0.jpg)](http://www.youtube.com/watch?v=F8y_f_nzsD0 "Dynamic Convolutions: Exploiting Spatial Sparsity for Faster Inference")
-
-
 ![Teaser GIF](fig.gif "Teaser GIF")
+
+###### Click thumbnail for 1-minute Youtube overview video
+[![](http://img.youtube.com/vi/F8y_f_nzsD0/0.jpg)](http://www.youtube.com/watch?v=F8y_f_nzsD0 "Dynamic Convolutions: Exploiting Spatial Sparsity for Faster Inference")
