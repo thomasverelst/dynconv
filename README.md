@@ -25,4 +25,7 @@ The first point is demonstrated on both classification and human pose estimation
 ## Coming later (~August-September)
 * Classification with efficient sparse MobileNetV2
 
+[![](http://img.youtube.com/vi/F8y_f_nzsD0/0.jpg)](http://www.youtube.com/watch?v=F8y_f_nzsD0 "Dynamic Convolutions: Exploiting Spatial Sparsity for Faster Inference")
+
+
 ![Teaser GIF](fig.gif "Teaser GIF")
