@@ -21,7 +21,7 @@ The first point is demonstrated on both classification and human pose estimation
 * [https://github.com/thomasverelst/dynconv/pose/](https://github.com/thomasverelst/dynconv/tree/master/pose)
 * Stacked Hourglass on MPII - with fast CUDA implementation of DynConv for depthwise convolutions of the MobileNetV2 residual block
 
-## Coming later (~August-September)
+## Coming later
 * Classification with efficient sparse MobileNetV2
 
 ![Teaser GIF](fig.gif "Teaser GIF")
