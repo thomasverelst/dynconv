@@ -1,19 +1,24 @@
-# DynConv
+# DynConv - classification
 
-This repository contains the implementation of DynConv ( [https://arxiv.org/abs/1912.03203](https://arxiv.org/abs/1912.03203) ) on classification. For simplicity, the code on classification does not include CUDA optimization for faster inference. To get that part, check the code on human pose estimation ( [https://github.com/thomasverelst/dynconv/tree/master/pose](https://github.com/thomasverelst/dynconv/tree/master/pose) ). This version just masks out spatial positions (e.g. similar to other works like Spatially Adaptive Computation Time).
+This repository contains the implementation of DynConv ( [https://arxiv.org/abs/1912.03203](https://arxiv.org/abs/1912.03203) ) on classification (CIFAR-10 / ImageNet). For simplicity, the code on classification does not include CUDA optimization for faster inference. To get that part, check the code on human pose estimation ( [https://github.com/thomasverelst/dynconv/tree/master/pose](https://github.com/thomasverelst/dynconv/tree/master/pose) ). This version just masks out spatial positions (e.g. similar to other works like Spatially Adaptive Computation Time).
 
 
 
 ## Installation
 ### Requirements
 The main requirements of this work are:
-> Python 3.6  
-> PyTorch 1.2  
+> python 3.6  
+> PyTorch 1.2 with torchvision 0.4
 
 These can be easily installed by creating a Conda environment. Otherwise look up instructions on how to install CuPy.
 
-    conda create -n dynconv python=3.6 pytorch=1.2 torchvision cupy tensorboardX=1.6 -c conda-forge -c pytorch
-The other requirements (matplotlib, tqdm, numpy...) can be installed using pip:
+     conda create -n dynconv python=3.6 -c conda-forge -c pytorch
+    
+Install Pytorch 1.2:
+
+    pip install torch==1.2.0+cu92 torchvision==0.4.0+cu92 -f https://download.pytorch.org/whl/torch_stable.html
+     
+The other requirements (matplotlib, scipy...) can be installed using pip:
 
     pip install -r requirements.txt
 
