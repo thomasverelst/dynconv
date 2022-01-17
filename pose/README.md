@@ -14,7 +14,7 @@ The main requirements of this work are:
 
 These can be easily installed by creating a Conda environment. Otherwise look up instructions on how to install CuPy.
 
-    conda create -n dynconv_pose python=3.6 pytorch=1.2 torchvision cupy tensorboardX=1.6 -c conda-forge -c pytorch
+    conda create -n dynconv_pose python=3.6 pytorch=1.2 torchvision=0.4 cupy tensorboardX=1.6 -c conda-forge -c pytorch
 The other requirements (matplotlib, scipy...) can be installed using pip:
 
     pip install -r requirements.txt
